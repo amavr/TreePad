@@ -47,6 +47,10 @@
             cursor: pointer;
         }
 
+        .tree li > span > div {
+            display: inline-block;
+        }
+
     .tree > ul > li::before, .tree > ul > li::after {
         border: 0;
     }

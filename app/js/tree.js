@@ -10,14 +10,13 @@
 
     var node_states = {
         collapsed: { title: "Expand", img_old: "minus", img_new: "plus" },
-        expanded: { title: "Collapse", img_old: "plus", img_new: "minus" }
+        expanded: { title: "Collapse", img_old: "plus", img_new: "minus" },
+        empty: { title: "Empty", img_old: "file", img_new: "file" }
     }
 
     function unselect() {
         var $old = $(".tree li > span.selected");
         if ($old.length > 0) {
-            //var text = $("#text").val();
-            //$old.parent().data("text", text);
             $old.removeClass("selected");
         }
     }
@@ -37,15 +36,19 @@
     }
 
     function clickIcon(e) {
-        var children = $(this.parentNode).parent('li.parent_li').find(' > ul > li');
-        var is_expanded = children.is(":visible");
+        e.stopPropagation();
+
+        var $li = $(this).parent().parent();
+
+        var $children = $(this.parentNode).parent('li.parent_li').find(' > ul > li');
+        var is_expanded = $children.is(":visible");
         var state = is_expanded ? node_states.collapsed : node_states.expanded;
 
         if (is_expanded) {
-            children.hide('fast');
+            $children.hide('fast');
         }
         else {
-            children.show('fast');
+            $children.show('fast');
         }
 
         $(this.parentNode)
@@ -54,7 +57,6 @@
             .addClass('glyphicon-' + state.img_new)
             .removeClass('glyphicon-' + state.img_old);
 
-        e.stopPropagation();
     }
 
     var getNodeData = function (node) {
@@ -205,14 +207,15 @@ function TreeNode(parent, node_data, visible, onClickLabel, onClickIcon) {
         $me.data = $("#text").val();
     });
 
-    if (node_data.children != undefined) {
-        if (node_data.children.length > 0) {
-            var $ul = $("<ul></ul>");
-            $me.append($ul);
-            for (var i = 0; i < node_data.children.length; i++) {
-                new TreeNode($ul, node_data.children[i], false, onClickLabel, onClickIcon);
-            }
+    if (node_data.children != undefined && node_data.children.length > 0) {
+        var $ul = $("<ul></ul>");
+        $me.append($ul);
+        for (var i = 0; i < node_data.children.length; i++) {
+            new TreeNode($ul, node_data.children[i], false, onClickLabel, onClickIcon);
         }
+    }
+    else {
+
     }
 
     this.data = function () {

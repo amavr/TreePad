@@ -38,6 +38,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="app\css\bootstrap.min.css" />
+    <Content Include="app\css\loading.css" />
+    <Content Include="app\css\tree.css" />
     <Content Include="app\editor.html" />
     <Content Include="app\img\globe32.gif" />
     <Content Include="app\img\node-tree-icon-16.png" />
