@@ -21,42 +21,65 @@
         }
     }
 
-    function select($span) {
+    function select($node) {
         unselect();
 
-        var text = $span.parent().data("text");
+        var text = $node.data("text");
         $("#text").val(text);
-        $span.addClass("selected");
+        $node.find('> span').addClass("selected");
     }
 
-    function clickLabel(e) {
-        // e.preventDefault();
-        select($(this));
+    var clickLabel = function(e) {
         e.stopPropagation();
+
+        select($(this).parent());
     }
 
-    function clickIcon(e) {
+    var clickIcon = function (e) {
         e.stopPropagation();
 
-        var $li = $(this).parent().parent();
+        // var $li = $(this).parent().parent();
+        var $span = $(this.parentNode);
+        var $li = $span.parent('li.parent_li');
+        var $i = $(this);
 
-        var $children = $(this.parentNode).parent('li.parent_li').find(' > ul > li');
-        var is_expanded = $children.is(":visible");
-        var state = is_expanded ? node_states.collapsed : node_states.expanded;
+        var $children = get_children($li);
 
-        if (is_expanded) {
-            $children.hide('fast');
+        if ($children.length > 0) {
+            var is_expanded = $children.is(":visible");
+            var state = is_expanded ? node_states.collapsed : node_states.expanded;
+
+            if (is_expanded) {
+                $children.hide('fast');
+            }
+            else {
+                $children.show('fast');
+                update_children_icons($children);
+            }
+
+            $(this.parentNode)
+                .attr('title', state.title)
+                .find(' > i')
+                .addClass('glyphicon-' + state.img_new)
+                .removeClass('glyphicon-' + state.img_old);
         }
-        else {
-            $children.show('fast');
+    }
+
+    var update_children_icons = function ($children) {
+        var n = $children.length;
+        for (var i = 0; i < n; i++) {
+            var $children2 = get_children($children[i]);
+            if ($children2.length == 0) {
+                var $i = $($children[i]).find('> span > i');
+                $i.addClass('glyphicon-file');
+                $i.removeClass('glyphicon-plus');
+                $i.removeClass('glyphicon-minus');
+            }
         }
+    }
 
-        $(this.parentNode)
-            .attr('title', state.title)
-            .find(' > i')
-            .addClass('glyphicon-' + state.img_new)
-            .removeClass('glyphicon-' + state.img_old);
-
+    var get_children = function ($li) {
+        return $($li).find(' > ul > li');
     }
 
     var getNodeData = function (node) {
@@ -97,6 +120,9 @@
             if (first.length > 0) {
                 select(first);
             }
+
+            var $root_nodes = $('.tree > ul > li');
+            update_children_icons($root_nodes);
         }
     }
 
@@ -145,6 +171,15 @@
     this.getSelected = function () {
         var selected = $(".tree li > span.selected");
         return selected;
+    }
+
+    this.hasChild = function ($node_span) {
+        if ($node_span) {
+            return $node_span.parent().find('ul').length > 0;
+        }
+        else {
+            return false;
+        }
     }
 }
 
