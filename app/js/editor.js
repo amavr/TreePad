@@ -2,6 +2,7 @@
 
     var me = this;
     var file_id = FileID;
+    this.title = '';
     var access_token = AccessToken;
 
     var $body = $("body");
@@ -22,12 +23,13 @@
             'path': '/drive/v2/files/' + file_id,
             'headers': { 'Authorization': 'Bearer ' + access_token },
             'method': 'GET',
-            'params': { "fields": "downloadUrl,title" }
+            'params': { "fields": "downloadUrl,title,parents(id,parentLink)" }
         });
 
         request.execute(function (file) {
             if (file.downloadUrl) {
-                document.title = file.title;
+                me.title = file.title;
+                document.title = me.title;
                 var xhr = new XMLHttpRequest();
                 xhr.open('GET', file.downloadUrl);
                 xhr.setRequestHeader('Authorization', 'Bearer ' + access_token);
@@ -69,6 +71,50 @@
         });
     }
 
+    var insertFile = function(fileData, title, callback) {
+        const boundary = '-------314159265358979323846';
+        const delimiter = "\r\n--" + boundary + "\r\n";
+        const close_delim = "\r\n--" + boundary + "--";
+
+        var reader = new FileReader();
+        reader.readAsBinaryString(fileData);
+        reader.onload = function (e) {
+            var contentType = fileData.type || 'application/octet-stream';
+            var metadata = {
+                'title': title,
+                'mimeType': contentType
+            };
+
+            var base64Data = btoa(reader.result);
+            var multipartRequestBody =
+                delimiter +
+                'Content-Type: application/json\r\n\r\n' +
+                JSON.stringify(metadata) +
+                delimiter +
+                'Content-Type: ' + contentType + '\r\n' +
+                'Content-Transfer-Encoding: base64\r\n' +
+                '\r\n' +
+                base64Data +
+                close_delim;
+
+            var request = gapi.client.request({
+                'path': '/upload/drive/v2/files',
+                'method': 'POST',
+                'params': { 'uploadType': 'multipart' },
+                'headers': {'Content-Type': 'multipart/mixed; boundary="' + boundary + '"', 'Authorization': 'Bearer ' + access_token},
+                'body': multipartRequestBody
+//             'headers': { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + access_token},
+
+            });
+            if (!callback) {
+                callback = function (file) {
+                    console.log(file)
+                };
+            }
+            request.execute(callback);
+        }
+    }
+
     var printFile = function (content) {
         if (content) {
             var box = document.getElementById("box-log");
@@ -86,6 +132,10 @@
         uploadFile(data, callback);
     }
 
+    this.saveas = function (data, title, callback) {
+        insertFile(data, title, callback);
+    }
+
     var constructor = function () {
         // downloadFile(printFile);
     }
@@ -100,7 +150,8 @@ function getParameterByName(name) {
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
-window.addEventListener('load', function (evt) {
+// window.addEventListener('load', function (evt) {
+function initHandlers() {
 
     var tree = new TreePad("#tree-box");
     var editor = new Editor(getParameterByName('id'), getParameterByName('ses'));
@@ -116,7 +167,16 @@ window.addEventListener('load', function (evt) {
         var data = tree.getData();
         var text = JSON.stringify(data);
         editor.save(text);
-        console.log(data);
+        console.log(text);
+    });
+
+    $('#btn-saveas').data('filename', editor.title);
+
+    $('#dlg-btn-save').bind('click', function () {
+        var data = tree.getData();
+        var text = JSON.stringify(data);
+        var blob = new Blob([text], { type: 'application/json' });
+        editor.saveas(blob, $('#file-name').val());
     });
 
     $('#btn-add').bind('click', function () {
@@ -140,9 +200,40 @@ window.addEventListener('load', function (evt) {
         tree.getSelected().parent().data('text', text);
     });
 
-});
 
-function onApiLoad() {
-    // editor = new Editor(getParameterByName('id'), getParameterByName('ses'));
+    $('#dialogSave').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var filename = button.data('filename'); // Extract info from data-* attributes
+        var modal = $(this);
+        modal.find('.modal-body input').val(editor.title);
+    });
+}
+
+function handleAuthResult(authResult) {
+    if (authResult && !authResult.error) {
+        console.log('auth is OK');
+        Settings.AccessToken = authResult.access_token;
+
+        // load drive lib
+        gapi.client.setApiKey(Settings.ApiKey);
+        gapi.client.load('drive', 'v2', function () {
+
+            // create wrapping API object
+            folder = new HomeFolder(function () {
+                initHandlers();
+            });
+        });
+    }
+    else {
+        console.log('auth is error');
+    }
+}
+
+function checkAuth() {
+    gapi.auth.authorize({ 'client_id': Settings.ClientID, 'scope': Settings.Scopes, 'immediate': true }, handleAuthResult);
+}
+
+function gapiLoad() {
+    window.setTimeout(checkAuth, 1);
 }
 

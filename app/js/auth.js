@@ -22,7 +22,7 @@ var auth_callback = function (result) {
     console.debug(result);
 };
 
-function gapiLoad() {
+function gapiLoad2() {
     gapi.client.setApiKey(Settings.ApiKey);
     capp = new ChromeApplication();
 }
