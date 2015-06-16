@@ -56,8 +56,11 @@ function handleAuthResult(authResult) {
             // create wrapping API object
             folder = new HomeFolder(function () {
                 folder.getFiles(function (files) {
+                    // console.log(files);
+                    $('#btn-new').css('display', 'inline');//show();
                     var pi = new PageInfo();
                     pi.showFiles(files);
+                    // console.log($('#btn-new'));
                 });
             });
         });

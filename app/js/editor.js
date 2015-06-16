@@ -1,7 +1,8 @@
-﻿function Editor(FileID, AccessToken) {
+﻿function Editor(FileID, HomeFolderId, AccessToken) {
 
     var me = this;
     var file_id = FileID;
+    var folder_id = HomeFolderId;
     this.title = '';
     var access_token = AccessToken;
 
@@ -71,7 +72,11 @@
         });
     }
 
-    var insertFile = function(fileData, title, callback) {
+
+
+    var insertFile = function(fileData, title, id, callback) {
+        showWait(true);
+
         const boundary = '-------314159265358979323846';
         const delimiter = "\r\n--" + boundary + "\r\n";
         const close_delim = "\r\n--" + boundary + "--";
@@ -82,7 +87,10 @@
             var contentType = fileData.type || 'application/octet-stream';
             var metadata = {
                 'title': title,
-                'mimeType': contentType
+                'mimeType': contentType,
+                'parents': [
+                    { 'id': folder_id }
+                ],
             };
 
             var base64Data = btoa(reader.result);
@@ -97,30 +105,27 @@
                 base64Data +
                 close_delim;
 
+            var rest_id = (id == null) ? '' : '/' + id;
+            var method = (id == null) ? 'POST' : 'PUT';
+
             var request = gapi.client.request({
-                'path': '/upload/drive/v2/files',
-                'method': 'POST',
+                'path': '/upload/drive/v2/files' + rest_id,
+                'method': method,
                 'params': { 'uploadType': 'multipart' },
                 'headers': {'Content-Type': 'multipart/mixed; boundary="' + boundary + '"', 'Authorization': 'Bearer ' + access_token},
                 'body': multipartRequestBody
-//             'headers': { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + access_token},
-
             });
+
             if (!callback) {
                 callback = function (file) {
                     console.log(file)
                 };
             }
-            request.execute(callback);
-        }
-    }
-
-    var printFile = function (content) {
-        if (content) {
-            var box = document.getElementById("box-log");
-            if (box) {
-                box.innerHTML = content;
-            }
+            request.execute(function (file) {
+                file_id = file.id;
+                showWait(false);
+                callback(file);
+            });
         }
     }
 
@@ -129,11 +134,20 @@
     }
 
     this.save = function (data, callback) {
-        uploadFile(data, callback);
+        // uploadFile(data, callback);
+        var text = JSON.stringify(data);
+        var blob = new Blob([text], { type: 'application/json' });
+        insertFile(blob, me.title, file_id, callback);
     }
 
     this.saveas = function (data, title, callback) {
-        insertFile(data, title, callback);
+        var text = JSON.stringify(data);
+        var blob = new Blob([text], { type: 'application/json' });
+        var new_id = (title === me.title) ? file_id : null;
+        insertFile(blob, title, new_id, callback);
+
+        this.title = title;
+        document.title = title;
     }
 
     var constructor = function () {
@@ -151,13 +165,13 @@ function getParameterByName(name) {
 }
 
 // window.addEventListener('load', function (evt) {
-function initHandlers() {
+function initHandlers(home_folder_id) {
 
     var tree = new TreePad("#tree-box");
-    var editor = new Editor(getParameterByName('id'), getParameterByName('ses'));
+    var editor = new Editor(getParameterByName('id'), home_folder_id, getParameterByName('ses'));
 
     editor.load(function (text) {
-        console.log(text);
+        // console.log(text);
         var nodes = JSON.parse(text);
         // console.log(nodes);
         tree.show(nodes);
@@ -165,18 +179,18 @@ function initHandlers() {
 
     $('#btn-upd').bind('click', function () {
         var data = tree.getData();
-        var text = JSON.stringify(data);
-        editor.save(text);
-        console.log(text);
+        editor.save(data, function (file) {
+            console.log(file);
+        });
     });
 
     $('#btn-saveas').data('filename', editor.title);
 
     $('#dlg-btn-save').bind('click', function () {
         var data = tree.getData();
-        var text = JSON.stringify(data);
-        var blob = new Blob([text], { type: 'application/json' });
-        editor.saveas(blob, $('#file-name').val());
+        editor.saveas(data, $('#file-name').val(), function (file) {
+            console.log(file);
+        });
     });
 
     $('#btn-add').bind('click', function () {
@@ -220,7 +234,7 @@ function handleAuthResult(authResult) {
 
             // create wrapping API object
             folder = new HomeFolder(function () {
-                initHandlers();
+                initHandlers(folder.props.id);
             });
         });
     }

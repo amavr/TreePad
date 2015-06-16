@@ -4,7 +4,7 @@ function HomeFolder(callback) {
 
     var me = this;
     var HOME = 'TreePad';
-    var folder = null;
+    this.props = null;
     var root_id = null;
 
     function getFolderItems(options, callback) {
@@ -64,7 +64,7 @@ function HomeFolder(callback) {
     this.getFiles = function (callback) {
 
         var options = {
-            'q': '"' + folder.id + '" in parents and trashed = false',
+            'q': '"' + me.props.id + '" in parents and trashed = false',
             'fields': 'items(id,mimeType,fileExtension,downloadUrl,webViewLink,webContentLink,defaultOpenWithLink,selfLink,kind,fileSize,modifiedDate,title)',
             'pageToken': null
         }
@@ -81,12 +81,12 @@ function HomeFolder(callback) {
             findHomeFolder(function (home_folder) {
                 if (home_folder == null) {
                     createHomeFolder(function (home_folder) {
-                        folder = home_folder;
+                        me.props = home_folder;
                         callback();
                     });
                 }
                 else {
-                    folder = home_folder;
+                    me.props = home_folder;
                     callback();
                 }
             });

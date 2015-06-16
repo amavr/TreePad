@@ -1,13 +1,12 @@
 <!doctype html>
 <html>
 <head>
-    <title>Test Popup</title>
+    <title>Select file</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css">
     <style>
         body{
             min-width: 100px;
-        }
-        a{
-            
+            padding: 8px;
         }
         #box-log {
             font: normal 11pt Consolas;
@@ -30,22 +29,22 @@
         li a{
             color: black;
             text-decoration: none;
+            white-space: nowrap;
         }
         li a:hover{
             text-decoration: underline;
         }
 
     </style>
-    <script src="js/event.js"></script>
-    <script src="js/settings.js"></script>
-    <script src="js/folder.js"></script>
-    <!--
-    <script src="js/auth.js"></script>
-    -->
-    <script src="js/popup.js"></script>
 </head>
 <body>
     <div id="box-log"><div id="box-loading"></div></div>
+    <a id="btn-new" class="btn btn-default" href="#" style="display:none;">new</a>
+    <script type="text/javascript" src="js/jquery-2.1.3.min.js"></script>
+    <script src="js/event.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/folder.js"></script>
+    <script src="js/popup.js"></script>
     <script type="text/javascript" src="https://apis.google.com/js/client.js?onload=gapiLoad"></script>
 </body>
 </html>
