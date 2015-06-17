@@ -25,6 +25,7 @@
 
     me.showFiles = function (files) {
         var html = '<ul>';
+        html += '<li class="file-new"><a id="file-new" class="file-ref" href="#">New document</a></li>';
         for (var i = 0; i < files.length; i++) {
             html += '<li><a id="file-' + files[i].id + '" class="file-ref" href="' + files[i].selfLink + '">' + files[i].title + '</a></li>';
         }

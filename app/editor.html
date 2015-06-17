@@ -17,7 +17,7 @@
             font-family: Consolas;
         }
 
-        #main{
+        #main {
             margin: 20px;
         }
 
@@ -33,25 +33,48 @@
 <body>
     <div class="row h100perc" id="main">
         <div class="col-md-4 h100perc">
-            <button id="btn-upd" type="button" class="btn btn-default">
-                <span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save
-            </button>
+            <div class="btn-group" role="group" aria-label="...">
+                <button id="btn-upd" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save
+                </button>
+                <button id="btn-saveas" type="button" class="btn btn-default" data-toggle="modal" data-target="#dialogSave" data-filename="new file">
+                    <span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save as
+                </button>
+            </div>
 
-            <button id="btn-saveas" type="button" class="btn btn-default" data-toggle="modal" data-target="#dialogSave" data-filename="new file">
-                <span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save as
-            </button>
+            <div class="btn-group" role="group" aria-label="...">
+                <button id="btn-copy" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>
+                </button>
+                <button id="btn-cut" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-scissors" aria-hidden="true"></span>
+                </button>
+                <button id="btn-paste" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-paste" aria-hidden="true"></span>
+                </button>
+            </div>
 
-            <button id="btn-add" type="button" class="btn btn-default" aria-label="Left Align">
-                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add node
-            </button>
+            <div class="btn-group" role="group" aria-label="...">
+                <button id="btn-add" type="button" class="btn btn-default" aria-label="Left Align">
+                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                </button>
 
-            <button id="btn-del" type="button" class="btn btn-default">
-                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Delete node
-            </button>
+                <button id="btn-del" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                </button>
+
+                <button id="btn-up" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>
+                </button>
+
+                <button id="btn-down" type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
+                </button>
+            </div>
 
             <!--<button id="btn-debug" type="button" class="btn btn-default">
-                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Debug
-            </button>-->
+        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Debug
+    </button>-->
 
             <div id="tree-box"></div>
         </div>

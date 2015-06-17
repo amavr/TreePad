@@ -61,6 +61,26 @@ function HomeFolder(callback) {
         });
     }
 
+    this.logout = function (accessToken, callback) {
+        var revokeUrl = 'https://accounts.google.com/o/oauth2/revoke?token=' + accessToken;
+
+        // Perform an asynchronous GET request.
+        $.ajax({
+            type: 'GET',
+            url: revokeUrl,
+            async: false,
+            contentType: "application/json",
+            dataType: 'jsonp',
+            success: function (nullResponse) {
+                if (callback) callback(true, null);
+            },
+            error: function (e) {
+                if (callback) callback(false, e);
+            }
+        });
+    }
+
+
     this.getFiles = function (callback) {
 
         var options = {

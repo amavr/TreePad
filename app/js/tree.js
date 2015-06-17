@@ -4,8 +4,8 @@
     var $obj = $(selector);
     $obj.addClass("tree");
     $obj.bind('click', function (e) {
-        $(".tree li > span.selected").removeClass("selected");
-        e.stopPropagation();
+        //$(".tree li > span.selected").removeClass("selected");
+        //e.stopPropagation();
     });
 
     var node_states = {
@@ -21,18 +21,10 @@
         }
     }
 
-    function select($node) {
-        unselect();
-
-        var text = $node.data("text");
-        $("#text").val(text);
-        $node.find('> span').addClass("selected");
-    }
-
     var clickLabel = function(e) {
         e.stopPropagation();
 
-        select($(this).parent());
+        me.select($(this).parent());
     }
 
     var clickIcon = function (e) {
@@ -109,6 +101,14 @@
         return list;
     }
 
+    this.select = function ($node) {
+        unselect();
+
+        var text = $node.data("text");
+        $("#text").val(text);
+        $node.find('> span').addClass("selected");
+    }
+
     this.show = function (nodes) {
         if (nodes.length > 0) {
             var $ul = $("ul", $obj.append("<ul></ul>"));
@@ -118,7 +118,7 @@
 
             var first = $('li span', $ul).first();
             if (first.length > 0) {
-                select(first);
+                me.select(first.parent());
             }
 
             var $root_nodes = $('.tree > ul > li');
@@ -143,6 +143,8 @@
         }
 
         new TreeNode($ul, node_data, true, clickLabel, clickIcon);
+
+        me.select($ul.children().last());
     }
 
     this.delete = function () {
@@ -164,8 +166,22 @@
         }
         $li.remove();
         if (new_li.length > 0) {
-            $('span', new_li).addClass('selected');
+            me.select(new_li);
         }
+    }
+
+    this.up = function () {
+        var $span = me.getSelected();
+        if ($span.length == 0) return;
+        var $li = $span.parent();
+        $li.prev().before($li);
+    }
+
+    this.down = function () {
+        var $span = me.getSelected();
+        if ($span.length == 0) return;
+        var $li = $span.parent();
+        $li.next().after($li);
     }
 
     this.getSelected = function () {

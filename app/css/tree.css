@@ -66,8 +66,10 @@
     }
 
     .tree li > span.selected {
-        background: #ffebbf;
-        border: 1px solid #ffc773;
+        /*background: #ffebbf;
+        border: 1px solid #ffc773;*/
+        background-color: #eaedff;
+        border: solid 1px #9aa8ee;
         color: #000;
     }
 

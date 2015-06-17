@@ -27,30 +27,36 @@
             'params': { "fields": "downloadUrl,title,parents(id,parentLink)" }
         });
 
-        request.execute(function (file) {
-            if (file.downloadUrl) {
-                me.title = file.title;
-                document.title = me.title;
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', file.downloadUrl);
-                xhr.setRequestHeader('Authorization', 'Bearer ' + access_token);
-                xhr.onload = function () {
+        request.execute(function (res) {
+            if (res && !res.error) {
+                var file = res;
+                if (file.downloadUrl) {
+                    me.title = file.title;
+                    document.title = me.title;
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('GET', file.downloadUrl);
+                    xhr.setRequestHeader('Authorization', 'Bearer ' + access_token);
+                    xhr.onload = function () {
+                        showWait(false);
+                        callback(true, xhr.responseText);
+                    };
+                    xhr.onerror = function () {
+                        showWait(false);
+                        callback(false, null);
+                    };
+                    xhr.send();
+                } else {
                     showWait(false);
-                    callback(xhr.responseText);
-                };
-                xhr.onerror = function () {
-                    showWait(false);
-                    callback(null);
-                };
-                xhr.send();
-            } else {
-                showWait(false);
-                callback(null);
+                    callback(false, null);
+                }
+            }
+            else {
+                callback(false, res.error);
             }
         });
     }
 
-    var uploadFile = function (data, callback) {
+    var uploadFileSimple = function (data, callback) {
         showWait(true);
         var request = gapi.client.request({
             'path': '/upload/drive/v2/files/' + file_id,
@@ -72,9 +78,7 @@
         });
     }
 
-
-
-    var insertFile = function(fileData, title, id, callback) {
+    var uploadFile = function (fileData, title, id, callback) {
         showWait(true);
 
         const boundary = '-------314159265358979323846';
@@ -137,14 +141,14 @@
         // uploadFile(data, callback);
         var text = JSON.stringify(data);
         var blob = new Blob([text], { type: 'application/json' });
-        insertFile(blob, me.title, file_id, callback);
+        uploadFile(blob, me.title, file_id, callback);
     }
 
     this.saveas = function (data, title, callback) {
         var text = JSON.stringify(data);
         var blob = new Blob([text], { type: 'application/json' });
         var new_id = (title === me.title) ? file_id : null;
-        insertFile(blob, title, new_id, callback);
+        uploadFile(blob, title, new_id, callback);
 
         this.title = title;
         document.title = title;
@@ -170,11 +174,16 @@ function initHandlers(home_folder_id) {
     var tree = new TreePad("#tree-box");
     var editor = new Editor(getParameterByName('id'), home_folder_id, getParameterByName('ses'));
 
-    editor.load(function (text) {
+    editor.load(function (success, answer) {
         // console.log(text);
-        var nodes = JSON.parse(text);
-        // console.log(nodes);
-        tree.show(nodes);
+        if (success) {
+            var nodes = JSON.parse(answer);
+            // console.log(nodes);
+            tree.show(nodes);
+        }
+        else {
+            if (answer.code == 401) alert(answer.message);
+        }
     });
 
     $('#btn-upd').bind('click', function () {
@@ -199,6 +208,14 @@ function initHandlers(home_folder_id) {
 
     $('#btn-del').bind('click', function () {
         tree.delete();
+    });
+
+    $('#btn-up').bind('click', function () {
+        tree.up();
+    });
+
+    $('#btn-down').bind('click', function () {
+        tree.down();
     });
 
     $('#btn-debug').bind('click', function () {
