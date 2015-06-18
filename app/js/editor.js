@@ -171,6 +171,36 @@ function getParameterByName(name) {
 // window.addEventListener('load', function (evt) {
 function initHandlers(home_folder_id) {
 
+    var editor = new Editor(getParameterByName('id'), home_folder_id, getParameterByName('ses'));
+    editor.load(function (success, answer) {
+        // console.log(text);
+        if (success) {
+            var data = JSON.parse(answer);
+            // console.log(nodes);
+            var tree = new Tree('#tree-box', data);
+
+            $('#btn-up').bind('click', function () {
+                tree.up();
+            });
+
+            $('#btn-down').bind('click', function () {
+                tree.down();
+            });
+
+            $('#btn-add').bind('click', function () {
+                tree.add({ title: 'new node', text: '' });
+            });
+
+        }
+        else {
+            if (answer.code == 401) alert(answer.message);
+        }
+    });
+
+
+    return;
+
+
     var tree = new TreePad("#tree-box");
     var editor = new Editor(getParameterByName('id'), home_folder_id, getParameterByName('ses'));
 

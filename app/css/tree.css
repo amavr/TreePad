@@ -11,6 +11,14 @@
         position: relative;
     }
 
+        .tree li.expanded ul {
+            display: block;
+        } 
+
+        .tree li.collapsed ul {
+            display: none;
+        } 
+
         .tree li::before, .tree li::after {
             content: '';
             left: -20px;
