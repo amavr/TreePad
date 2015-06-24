@@ -166,8 +166,9 @@
     this.load = function (callback) {
         downloadFile(function(success, answer){
             if (success) {
+                console.log(answer);
                 var data = JSON.parse(answer);
-                // console.log(nodes);
+                console.log(data);
                 tree = new Tree('#tree-box', data);
                 initHandlers();
             }

@@ -87,7 +87,7 @@
             var art = $($list[i]).data('article');
             data.push(art.getData());
         }
-        return JSON.stringify(data);
+        return data;
     } 
 
     var constructor = function () {
