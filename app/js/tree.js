@@ -79,6 +79,17 @@
         }
     }
 
+    this.getData = function(){
+        var $list = $ul.find('> li');
+        var count = $list.length;
+        var data = [];
+        for(var i = 0; i < count; i++){
+            var art = $($list[i]).data('article');
+            data.push(art.getData());
+        }
+        return JSON.stringify(data);
+    } 
+
     var constructor = function () {
         $ul = $('<ul></ul>');
         $box.append($ul);

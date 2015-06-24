@@ -113,6 +113,23 @@
 
     var  initHandlers = function() {
     
+            $('#btn-debug').bind('click', function () {
+                var data = tree.getData();
+                console.log(data);
+            });
+
+            $('#btn-save').bind('click', function () {
+                var data = tree.getData();
+                me.save(data, function(file){
+                    console.log(file);
+                });
+            });
+    
+            $('#btn-saveas').bind('click', function () {
+                me.saveas();
+            });
+    
+    
             $('#btn-up').bind('click', function () {
                 tree.up();
             });
@@ -128,6 +145,22 @@
             $('#btn-del').bind('click', function () {
                 tree.delete();
             });
+            
+            // включение/выключение режима редактирования имени узла
+            $('.tree')
+                .delegate('span > div', 'dblclick', function () {
+                    this.contentEditable = true;
+                })
+                .delegate('span > div', 'blur', function () {
+                    this.contentEditable = false;
+                })
+                .delegate('span > div', 'keypress', function (e) {
+                    if (e.which == 13)
+                    {
+                        this.contentEditable = false;
+                        return false;
+                    }
+                });            
     }
 
     this.load = function (callback) {

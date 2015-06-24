@@ -97,7 +97,7 @@ function HomeFolder(callback) {
     var constructor = function (callback) {
         getRootFolder(function (rootId) {
             root_id = rootId;
-            console.log(root_id);
+            // console.log(root_id);
             findHomeFolder(function (home_folder) {
                 if (home_folder == null) {
                     createHomeFolder(function (home_folder) {

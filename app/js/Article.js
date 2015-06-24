@@ -1,4 +1,4 @@
-﻿function Article($parent_ul, data, visible, onSelect) {
+﻿function Article(parentUl, data, visible, onSelect) {
 
     var me = this;
 
@@ -9,6 +9,7 @@
     var $sign = null;
     var $lab = null;
     var $ul = null;
+    var $parent_ul = parentUl; 
 
     var on_select = onSelect;
 
@@ -44,6 +45,17 @@
 
     this.ul = function () {
         return $ul;
+    }
+
+    this.getData = function(){
+        var $list = $ul.find('> li');
+        var count = $list.length;
+        var data = [];
+        for(var i = 0; i < count; i++){
+            var art = $($list[i]).data('article');
+            data.push(art.getData());
+        }
+        return {title: $lab.text(), text: me.text, children: data };
     }
 
     this.add = function (article) {
