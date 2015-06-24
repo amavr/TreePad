@@ -39,6 +39,32 @@
         node.select();
     }
 
+    this.delete = function () {
+        if(selected){
+            var $li = selected.li();
+            var $new_li = $li.next();
+            if($new_li.length == 0){
+                $new_li = $li.prev();
+                if($new_li.length == 0){
+                    $new_li = $li.parent().parent();
+                    
+                     $new_li
+                         .find('span > i')
+                         .addClass('glyphicon-file')
+                         .removeClass('glyphicon-minus')
+                         .removeClass('glyphicon-plus');
+                 }
+            }
+            $li.remove();
+            if($new_li.length > 0){
+                selected = $new_li.data('article');
+                $new_li.find('> span').addClass('selected');
+                var data = $new_li.data('article');
+                console.log(data);
+            }
+        } 
+    }
+
     this.up = function () {
         if (selected) {
             var $li = selected.li();

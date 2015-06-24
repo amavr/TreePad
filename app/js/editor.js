@@ -1,10 +1,10 @@
-﻿function Editor(FileID, HomeFolderId, AccessToken) {
+﻿function Editor(FileID, HomeFolderId) {
 
     var me = this;
     var file_id = FileID;
     var folder_id = HomeFolderId;
+    var tree = null; 
     this.title = '';
-    var access_token = AccessToken;
 
     var $body = $("body");
 
@@ -22,7 +22,7 @@
         showWait(true);
         var request = gapi.client.request({
             'path': '/drive/v2/files/' + file_id,
-            'headers': { 'Authorization': 'Bearer ' + access_token },
+            'headers': { 'Authorization': 'Bearer ' + Settings.AccessToken },
             'method': 'GET',
             'params': { "fields": "downloadUrl,title,parents(id,parentLink)" }
         });
@@ -35,7 +35,7 @@
                     document.title = me.title;
                     var xhr = new XMLHttpRequest();
                     xhr.open('GET', file.downloadUrl);
-                    xhr.setRequestHeader('Authorization', 'Bearer ' + access_token);
+                    xhr.setRequestHeader('Authorization', 'Bearer ' + Settings.AccessToken);
                     xhr.onload = function () {
                         showWait(false);
                         callback(true, xhr.responseText);
@@ -56,34 +56,12 @@
         });
     }
 
-    var uploadFileSimple = function (data, callback) {
-        showWait(true);
-        var request = gapi.client.request({
-            'path': '/upload/drive/v2/files/' + file_id,
-            'method': 'PUT',
-            'params': { 'uploadType': 'media', 'alt': 'json' },
-            'headers': { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + access_token},
-            'body': data
-        });
-
-        if (!callback) {
-            callback = function (file) {
-                console.log(file)
-            };
-        }
-
-        request.execute(function (file) {
-            showWait(false);
-            callback(file);
-        });
-    }
-
     var uploadFile = function (fileData, title, id, callback) {
         showWait(true);
 
-        const boundary = '-------314159265358979323846';
-        const delimiter = "\r\n--" + boundary + "\r\n";
-        const close_delim = "\r\n--" + boundary + "--";
+        var boundary = '-------314159265358979323846';
+        var delimiter = "\r\n--" + boundary + "\r\n";
+        var close_delim = "\r\n--" + boundary + "--";
 
         var reader = new FileReader();
         reader.readAsBinaryString(fileData);
@@ -116,7 +94,7 @@
                 'path': '/upload/drive/v2/files' + rest_id,
                 'method': method,
                 'params': { 'uploadType': 'multipart' },
-                'headers': {'Content-Type': 'multipart/mixed; boundary="' + boundary + '"', 'Authorization': 'Bearer ' + access_token},
+                'headers': {'Content-Type': 'multipart/mixed; boundary="' + boundary + '"', 'Authorization': 'Bearer ' + Settings.AccessToken},
                 'body': multipartRequestBody
             });
 
@@ -133,8 +111,35 @@
         }
     }
 
+    var  initHandlers = function() {
+    
+            $('#btn-up').bind('click', function () {
+                tree.up();
+            });
+    
+            $('#btn-down').bind('click', function () {
+                tree.down();
+            });
+    
+            $('#btn-add').bind('click', function () {
+                tree.add({ title: 'new node', text: '' });
+            });
+    
+            $('#btn-del').bind('click', function () {
+                tree.delete();
+            });
+    }
+
     this.load = function (callback) {
-        downloadFile(callback);
+        downloadFile(function(success, answer){
+            if (success) {
+                var data = JSON.parse(answer);
+                // console.log(nodes);
+                tree = new Tree('#tree-box', data);
+                initHandlers();
+            }
+            callback(success, answer);
+        });
     }
 
     this.save = function (data, callback) {
@@ -161,115 +166,16 @@
     constructor();
 }
 
+// window.addEventListener('load', function (evt) {
+
+
 function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
         results = regex.exec(location.search);
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
-
-// window.addEventListener('load', function (evt) {
-function initHandlers(home_folder_id) {
-
-    var editor = new Editor(getParameterByName('id'), home_folder_id, getParameterByName('ses'));
-    editor.load(function (success, answer) {
-        // console.log(text);
-        if (success) {
-            var data = JSON.parse(answer);
-            // console.log(nodes);
-            var tree = new Tree('#tree-box', data);
-
-            $('#btn-up').bind('click', function () {
-                tree.up();
-            });
-
-            $('#btn-down').bind('click', function () {
-                tree.down();
-            });
-
-            $('#btn-add').bind('click', function () {
-                tree.add({ title: 'new node', text: '' });
-            });
-
-        }
-        else {
-            if (answer.code == 401) alert(answer.message);
-        }
-    });
-
-
-    return;
-
-
-    var tree = new TreePad("#tree-box");
-    var editor = new Editor(getParameterByName('id'), home_folder_id, getParameterByName('ses'));
-
-    editor.load(function (success, answer) {
-        // console.log(text);
-        if (success) {
-            var nodes = JSON.parse(answer);
-            // console.log(nodes);
-            tree.show(nodes);
-        }
-        else {
-            if (answer.code == 401) alert(answer.message);
-        }
-    });
-
-    $('#btn-upd').bind('click', function () {
-        var data = tree.getData();
-        editor.save(data, function (file) {
-            console.log(file);
-        });
-    });
-
-    $('#btn-saveas').data('filename', editor.title);
-
-    $('#dlg-btn-save').bind('click', function () {
-        var data = tree.getData();
-        editor.saveas(data, $('#file-name').val(), function (file) {
-            console.log(file);
-        });
-    });
-
-    $('#btn-add').bind('click', function () {
-        tree.add({ title: 'new node', text: '' });
-    });
-
-    $('#btn-del').bind('click', function () {
-        tree.delete();
-    });
-
-    $('#btn-up').bind('click', function () {
-        tree.up();
-    });
-
-    $('#btn-down').bind('click', function () {
-        tree.down();
-    });
-
-    $('#btn-debug').bind('click', function () {
-        var data = tree.getData();
-        var text = JSON.stringify(data);
-        console.log(data);
-        console.log(text);
-    });
-
-    // обновление текста узела при изменении textarea
-    $('#text').keyup(function () {
-        var text = $("#text").val();
-        tree.getSelected().parent().data('text', text);
-    });
-
-
-    $('#dialogSave').on('show.bs.modal', function (event) {
-        var button = $(event.relatedTarget);
-        var filename = button.data('filename'); // Extract info from data-* attributes
-        var modal = $(this);
-        modal.find('.modal-body input').val(editor.title);
-    });
-}
-
+    
 function handleAuthResult(authResult) {
     if (authResult && !authResult.error) {
         console.log('auth is OK');
@@ -280,8 +186,17 @@ function handleAuthResult(authResult) {
         gapi.client.load('drive', 'v2', function () {
 
             // create wrapping API object
-            folder = new HomeFolder(function () {
-                initHandlers(folder.props.id);
+            var folder = new HomeFolder(function () {
+                // initHandlers(folder.props.id);
+                
+                var editor = new Editor(getParameterByName('id'), folder.props.id);
+                editor.load(function (success, answer) {
+                    // console.log(text);
+                    if (!success) {
+                        if (answer.code == 401) alert(answer.message);
+                    }
+                });                
+                
             });
         });
     }
