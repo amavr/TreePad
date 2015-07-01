@@ -7,6 +7,17 @@ function HomeFolder(callback) {
     this.props = null;
     var root_id = null;
 
+    var $body = $("body");
+
+    var showWait = function (bool) {
+        if (bool) {
+            $body.addClass("loading");
+        }
+        else {
+            $body.removeClass("loading");
+        }
+    }
+
     function getFolderItems(options, callback) {
         var retrievePageOfChildren = function (request, result) {
             request.execute(function (resp) {
@@ -94,6 +105,61 @@ function HomeFolder(callback) {
         });
     }
 
+    this.addFile = function (fileData, title, id, callback) {
+        showWait(true);
+
+        var boundary = '-------314159265358979323846';
+        var delimiter = "\r\n--" + boundary + "\r\n";
+        var close_delim = "\r\n--" + boundary + "--";
+
+        var reader = new FileReader();
+        reader.readAsBinaryString(fileData);
+        reader.onload = function (e) {
+            var contentType = fileData.type || 'application/octet-stream';
+            var metadata = {
+                'title': title,
+                'mimeType': contentType,
+                'parents': [
+                    { 'id': me.props.id }
+                ],
+            };
+
+            var base64Data = btoa(reader.result);
+            var multipartRequestBody =
+                delimiter +
+                'Content-Type: application/json\r\n\r\n' +
+                JSON.stringify(metadata) +
+                delimiter +
+                'Content-Type: ' + contentType + '\r\n' +
+                'Content-Transfer-Encoding: base64\r\n' +
+                '\r\n' +
+                base64Data +
+                close_delim;
+
+            var rest_id = (id == null) ? '' : '/' + id;
+            var method = (id == null) ? 'POST' : 'PUT';
+
+            var request = gapi.client.request({
+                'path': '/upload/drive/v2/files' + rest_id,
+                'method': method,
+                'params': { 'uploadType': 'multipart' },
+                'headers': { 'Content-Type': 'multipart/mixed; boundary="' + boundary + '"', 'Authorization': 'Bearer ' + Settings.AccessToken },
+                'body': multipartRequestBody
+            });
+
+            if (!callback) {
+                callback = function (file) {
+                    console.log(file)
+                };
+            }
+            request.execute(function (file) {
+                file_id = file.id;
+                showWait(false);
+                callback(file);
+            });
+        }
+    }
+
     var constructor = function (callback) {
         getRootFolder(function (rootId) {
             root_id = rootId;
@@ -109,6 +175,7 @@ function HomeFolder(callback) {
                     me.props = home_folder;
                     callback();
                 }
+                console.log(me.props);
             });
         });
     }

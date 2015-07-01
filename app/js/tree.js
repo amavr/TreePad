@@ -18,12 +18,16 @@
     }
 
     var putText = function () {
-        if (selected) selected.text = $("#text").val();
+        if (selected) {
+            // selected.text = $("#text").val();
+            selected.text = $("#text-box").text();
+        }
     }
 
     var getText = function () {
         var text = (selected) ? selected.text : '';
-        $("#text").val(text);
+        // $("#text").val(text);
+        $('#text-box').text(text);
     }
 
     var onSelect = function (node) {
@@ -79,7 +83,9 @@
         }
     }
 
-    this.getData = function(){
+    this.getData = function () {
+        // сначала в узел заносится текст из редактора 
+        putText();
         var $list = $ul.find('> li');
         var count = $list.length;
         var data = [];

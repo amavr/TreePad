@@ -54,7 +54,6 @@
     <Content Include="app\js\folder.js" />
     <Content Include="app\js\popup.js" />
     <Content Include="app\js\settings.js" />
-    <Content Include="app\js\treepad.js" />
     <Content Include="app\js\tree.js" />
     <Content Include="app\popup.html" />
     <Content Include="Properties\build\lib\Ionic.Zip.DLL" />
