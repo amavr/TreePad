@@ -175,7 +175,7 @@ function HomeFolder(callback) {
                     me.props = home_folder;
                     callback();
                 }
-                console.log(me.props);
+                // console.log(me.props);
             });
         });
     }

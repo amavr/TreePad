@@ -19,14 +19,12 @@
 
     var putText = function () {
         if (selected) {
-            // selected.text = $("#text").val();
-            selected.text = $("#text-box").text();
+            selected.text = $("#text-box")[0].innerText;
         }
     }
 
     var getText = function () {
         var text = (selected) ? selected.text : '';
-        // $("#text").val(text);
         $('#text-box').text(text);
     }
 
