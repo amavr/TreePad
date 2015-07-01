@@ -1,5 +1,6 @@
 ﻿.tree {
     min-height: 20px;
+    min-width: 300px;
     padding: 19px;
     margin-bottom: 20px;
     font-family: Arial, Tahoma, Consolas;
@@ -46,7 +47,7 @@
     }
 
     .tree li > span:hover {
-        background: #eee;
+        background: #999;
         border-style: none;
         color: #000;
     }
