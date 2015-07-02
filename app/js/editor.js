@@ -148,23 +148,19 @@
             
             // включение/выключение режима редактирования имени узла
             $('.tree')
-                .delegate('span > div', 'dblclick', function (e) {
-                    e.preventDefault();
+                .delegate('span > div', 'dblclick', function () {
                     this.contentEditable = true;
                 })
-                .delegate('span > div', 'blur', function (e) {
-                    e.preventDefault();
+                .delegate('span > div', 'blur', function () {
                     this.contentEditable = false;
-                    $(this).html($(this).text());
                 })
                 .delegate('span > div', 'keypress', function (e) {
                     if (e.which == 13)
                     {
-                        e.preventDefault();
                         this.contentEditable = false;
-                        $(this).html($(this).text());
+                        return false;
                     }
-                });         
+                });            
     }
 
     this.load = function (callback) {

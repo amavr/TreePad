@@ -93,7 +93,7 @@
         $li = $('<li class="collapsed"></li>');
         $li.data('article', me);
 
-        $span = $('<span draggable="true"></span>');
+        $span = $('<span></span>');
         $span.data('article', me);
         $li.append($span);
 
