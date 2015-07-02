@@ -32,7 +32,7 @@
         btn.on('click', function () {
             var text = '[]';
             var blob = new Blob([text], { type: 'application/json' });
-            folder.addFile(blob, inp.val().trim(), null, function (file) {
+            drive.addFile(blob, inp.val().trim(), null, function (file) {
                 // console.log(JSON.stringify(file));
                 chrome.runtime.getBackgroundPage(function (eventPage) {
                     eventPage.openTab(file.id, Settings.AccessToken);
@@ -81,34 +81,35 @@
     constructor();
 }
 
-function handleAuthResult(authResult) {
-    if (authResult && !authResult.error) {
-        console.log('auth is OK');
-        Settings.AccessToken = authResult.access_token;
-
-        // load drive lib
-        gapi.client.setApiKey(Settings.ApiKey);
-        gapi.client.load('drive', 'v2', function () {
-
-            // create wrapping API object
-            folder = new HomeFolder(function () {
-                folder.getFiles(function (files) {
-                    // console.log(files);
-                    $('#btn-new').css('display', 'inline');//show();
-                    var pi = new PageInfo();
-                    pi.showFiles(files);
-                    // console.log($('#btn-new'));
-                });
-            });
-        });
-    }
-    else {
-        console.log('auth is error');
-    }
+function x() {
+    chrome.identity.getAuthToken({
+        interactive: true
+    }, function (token) {
+        if (chrome.runtime.lastError) {
+            alert(chrome.runtime.lastError.message);
+            return;
+        }
+        var x = new XMLHttpRequest();
+        x.open('GET', 'https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=' + token);
+        x.onload = function () {
+            alert(x.response);
+        };
+        x.send();
+    });
 }
 
+
 function checkAuth() {
-    gapi.auth.authorize({ 'client_id': Settings.ClientID, 'scope': Settings.Scopes, 'immediate': true }, handleAuthResult);
+
+    drive = new Drive(function () {
+        drive.getFiles(function (files) {
+            // console.log(files);
+            $('#btn-new').css('display', 'inline');//show();
+            var pi = new PageInfo();
+            pi.showFiles(files);
+            // console.log($('#btn-new'));
+        });
+    });
 }
 
 function gapiLoad() {

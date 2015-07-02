@@ -1,6 +1,6 @@
-﻿var folder = null;
+﻿var drive = null;
 
-function HomeFolder(callback) {
+function Drive(callback) {
 
     var me = this;
     var HOME = 'TreePad';
@@ -18,6 +18,109 @@ function HomeFolder(callback) {
         }
     }
 
+    // callback = function(bool success, string error)
+    function authDone(result, state, callback) {
+        if (result && !result.error) {
+            Settings.AccessToken = result.access_token;
+            callback(true, null);
+            return;
+        }
+
+        if (state == 0) {
+            gapi.auth.authorize({ 'client_id': Settings.ClientID, 'scope': Settings.Scopes, 'immediate': false }, function (result) {
+                authDone(result, 1, callback);
+            });
+        }
+        else {
+            callback(false, result.error);
+        }
+    }
+
+    function initClient() {
+        // load drive lib
+        // gapi.client.setApiKey(Settings.ApiKey);
+        gapi.client.load('drive', 'v2', function () {
+            gapi.client.setApiKey(Settings.ApiKey);
+            me.auth(function (success, error) {
+                if (success) {
+                    getRootFolder(function (rootId) {
+                        root_id = rootId;
+                        // console.log(root_id);
+                        findHomeFolder(function (home_folder) {
+                            if (home_folder == null) {
+                                createHomeFolder(function (home_folder) {
+                                    me.props = home_folder;
+                                    callback();
+                                });
+                            }
+                            else {
+                                me.props = home_folder;
+                                callback();
+                            }
+                            // console.log(me.props);
+                        });
+                    });
+                }
+                else {
+                    console.log(error);
+                }
+            });
+        });
+    }
+
+    // callback = function (error, httpStatus, responseText);
+    function authenticatedXhr(method, url, callback) {
+
+        chrome.identity.getAuthToken(
+            { 'interactive': true },
+            function (access_token) {
+                Settings.AccessToken = access_token;
+            }
+        );
+
+        return;
+
+
+        var retry = true;
+        function getTokenAndXhr() {
+            chrome.identity.getAuthToken({ 'interactive': true },
+            function (access_token) {
+                if (chrome.runtime.lastError) {
+                    callback(chrome.runtime.lastError);
+                    return;
+                }
+
+                var xhr = new XMLHttpRequest();
+                xhr.open(method, url);
+                xhr.setRequestHeader('Authorization', 'Bearer ' + access_token);
+
+                xhr.onload = function () {
+                    if (this.status === 401 && retry) {
+                        // This status may indicate that the cached
+                        // access token was invalid. Retry once with
+                        // a fresh token.
+                        retry = false;
+                        chrome.identity.removeCachedAuthToken(
+                            { 'token': access_token },
+                            getTokenAndXhr);
+                        return;
+                    }
+
+                    callback(null, this.status, this.responseText);
+                }
+            });
+        }
+
+        getTokenAndXhr();
+    }
+
+    function initChrome() {
+        authenticatedXhr('GET', 'https://www.googleapis.com/auth/drive', function (error, httpStatus, responseText) {
+            console.log({err: error, status: httpStatus, text: responseText});
+        });
+    }
+
+    // callback = function([] files)
     function getFolderItems(options, callback) {
         var retrievePageOfChildren = function (request, result) {
             request.execute(function (resp) {
@@ -36,6 +139,7 @@ function HomeFolder(callback) {
         retrievePageOfChildren(initialRequest, []);
     }
 
+    // callback = function(object folder)
     var findHomeFolder = function (callback) {
         var options = {
             'q': 'mimeType contains "application/vnd.google-apps.folder" and title = "' + HOME + '" and trashed = false and "'+ root_id +'" in parents',
@@ -49,6 +153,7 @@ function HomeFolder(callback) {
         });
     }
 
+    // callback = function(object resp)
     var createHomeFolder = function (callback) {
         var body_request = {
             'title': HOME,
@@ -65,6 +170,7 @@ function HomeFolder(callback) {
         });
     }
 
+    // calback = function(string folder_id)
     var getRootFolder = function (callback) {
         var request = gapi.client.drive.about.get();
         request.execute(function (resp) {
@@ -72,6 +178,7 @@ function HomeFolder(callback) {
         });
     }
 
+    // callback = function(bool success, object error)
     this.logout = function (accessToken, callback) {
         var revokeUrl = 'https://accounts.google.com/o/oauth2/revoke?token=' + accessToken;
 
@@ -92,6 +199,7 @@ function HomeFolder(callback) {
     }
 
 
+    // callback = function([] file)
     this.getFiles = function (callback) {
 
         var options = {
@@ -160,24 +268,18 @@ function HomeFolder(callback) {
         }
     }
 
-    var constructor = function (callback) {
-        getRootFolder(function (rootId) {
-            root_id = rootId;
-            // console.log(root_id);
-            findHomeFolder(function (home_folder) {
-                if (home_folder == null) {
-                    createHomeFolder(function (home_folder) {
-                        me.props = home_folder;
-                        callback();
-                    });
-                }
-                else {
-                    me.props = home_folder;
-                    callback();
-                }
-                // console.log(me.props);
-            });
+    // callback = function(bool success, string error)
+    this.auth = function (callback) {
+        gapi.auth.authorize({ 'client_id': Settings.ClientID, 'scope': Settings.Scopes, 'immediate': true }, function (result) {
+            authDone(result, 0, callback);
         });
+    }
+
+
+
+    var constructor = function (callback) {
+        initClient();
+        // initChrome();
     }
 
     constructor(callback);

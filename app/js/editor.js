@@ -207,37 +207,18 @@ function getParameterByName(name) {
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
     
-function handleAuthResult(authResult) {
-    if (authResult && !authResult.error) {
-        console.log('auth is OK');
-        Settings.AccessToken = authResult.access_token;
-
-        // load drive lib
-        gapi.client.setApiKey(Settings.ApiKey);
-        gapi.client.load('drive', 'v2', function () {
-
-            // create wrapping API object
-            var folder = new HomeFolder(function () {
-                // initHandlers(folder.props.id);
-                
-                var editor = new Editor(getParameterByName('id'), folder.props.id);
-                editor.load(function (success, answer) {
-                    // console.log(text);
-                    if (!success) {
-                        if (answer.code == 401) alert(answer.message);
-                    }
-                });                
-                
-            });
-        });
-    }
-    else {
-        console.log('auth is error');
-    }
-}
-
 function checkAuth() {
-    gapi.auth.authorize({ 'client_id': Settings.ClientID, 'scope': Settings.Scopes, 'immediate': true }, handleAuthResult);
+
+    drive = new Drive(function () {
+        var editor = new Editor(getParameterByName('id'), drive.props.id);
+        editor.load(function (success, answer) {
+            // console.log(text);
+            if (!success) {
+                if (answer.code == 401) alert(answer.message);
+            }
+        });
+    });
+
 }
 
 function gapiLoad() {
