@@ -1,8 +1,8 @@
-﻿function PageInfo() {
+function PageInfo() {
 
     var me = this;
 
-    var re = /\d{2}(\d{2})-(\d{2})-(\d{2})T(\d{2}):(\d{2}).*/gi
+    var re = /\d{2}(\d{2})-(\d{2})-(\d{2})T(\d{2}):(\d{2}).*/gi;
 
     this.box_list = null;
     var inp = null;
@@ -10,14 +10,14 @@
 
     var dt2str = function (dt) {
         return dt.replace(re, '$3.$2.$1 $4:$5');
-    }
+    };
 
     var log = function (msg) {
         var box_log = $('#box-log');
         var html = box_log.html();
         html += msg + '<br/>';
         box_log.html(html);
-    }
+    };
 
     var onFileSelect = function (e) {
         // console.log(e);
@@ -26,7 +26,7 @@
             eventPage.openTab(file_id, Settings.AccessToken);
         });
         return false;
-    }
+    };
 
     var setHandlers = function (item, i) {
         btn.on('click', function () {
@@ -45,14 +45,14 @@
             log('changed');
             var text = inp.val().trim();
             log(text);
-            if (text == '') {
+            if (text === '') {
                 btn.attr('disabled', 'disabled');
             }
             else {
                 btn.removeAttr('disabled');
             }
         });
-    }
+    };
 
     me.showFiles = function (files) {
         var html = '<ul>';
@@ -69,7 +69,7 @@
         $('#new-doc-box').show();
         var w = box.width();
         inp.width(w - 48);
-    }
+    };
 
     function constructor() {
         me.box_list = document.getElementById("box-list");
@@ -81,39 +81,31 @@
     constructor();
 }
 
-function x() {
-    chrome.identity.getAuthToken({
-        interactive: true
-    }, function (token) {
-        if (chrome.runtime.lastError) {
-            alert(chrome.runtime.lastError.message);
-            return;
+
+function auth(){
+    
+    var callback = function(token){
+        if(token){
+            Settings.AccessToken = token;
+            drive = new Drive(function () {
+                drive.getFiles(function (files) {
+                    // console.log(files);
+                    $('#btn-new').css('display', 'inline');//show();
+                    var pi = new PageInfo();
+                    pi.showFiles(files);
+                    // console.log($('#btn-new'));
+                });
+            });
         }
-        var x = new XMLHttpRequest();
-        x.open('GET', 'https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=' + token);
-        x.onload = function () {
-            alert(x.response);
-        };
-        x.send();
-    });
+    };
+    
+    new AuthHelper(callback);
 }
 
-
-function checkAuth() {
-
-    drive = new Drive(function () {
-        drive.getFiles(function (files) {
-            // console.log(files);
-            $('#btn-new').css('display', 'inline');//show();
-            var pi = new PageInfo();
-            pi.showFiles(files);
-            // console.log($('#btn-new'));
-        });
-    });
-}
 
 function gapiLoad() {
-    window.setTimeout(checkAuth, 1);
+    // window.setTimeout(checkAuth, 1);
+    window.setTimeout(auth, 1);
 }
 
 

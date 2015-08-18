@@ -1,60 +1,40 @@
-﻿'use strict';
+// 'use strict';
 
-var Settings = {
+function AuthHelper(callback) {
 
-    // Client ID for Chrome application
-    // CLIENT ID
-    ClientID: "458531844515-8aohg5151k1gdmfbt5762dpjcc25g9e9.apps.googleusercontent.com",
+    var cb = callback;
+    var can_auth = true;
 
-    // Key for browser applications
-    // API KEY
-    ApiKey: "AIzaSyAAdwcBLfjclphcokapqnSEEp2PX6Y6la0",
+    var handleAuthResult = function (authResult) {
 
-    AccessToken: null,
+        if (authResult && !authResult.error) {
+            gapi.client.setApiKey(Settings.ApiKey);
+            cb(authResult.access_token);
+        } else {
+            if (can_auth) {
+                can_auth = false;
 
-    Scopes: [
-        'https://www.googleapis.com/auth/drive'
-    ]
-}
+                gapi.auth.authorize(
+                    { 'client_id': Settings.ClientID, 'scope': Settings.Scopes, 'immediate': false },
+                    handleAuthResult);
+            }
+            else {
+                alert(authResult.error);
+                cb(null);
+            }
+        }
+    };
 
-var auth_callback = function (result) {
-    console.debug("default callback");
-    console.debug(result);
-};
-
-function gapiLoad2() {
-    gapi.client.setApiKey(Settings.ApiKey);
-    capp = new ChromeApplication();
-}
-
-function checkAuth(callback) {
-    if (callback) auth_callback = callback;
-
-    gapi.auth.authorize(
-        {
-            'client_id': Settings.ClientID,
-            'scope': Settings.Scopes,
-            'immediate': true
-        },
-        handleAuthResult);
-}
-
-function handleAuthResult(authResult) {
-
-    if (authResult && !authResult.error) {
-        Settings.AccessToken = authResult.access_token;
-        if (auth_callback) auth_callback(authResult);
-        // console.log(token);
-        // gapi.client.load('drive', 'v2', retrieveDriveFiles);
-        console.log("auth automatic");
-    }
-    else {
+    var checkAuth = function () {
         gapi.auth.authorize(
-			{
-			    'client_id': Settings.ClientID,
-			    'scope': Settings.Scopes,
-			    "immediate": false
-			},
-			handleAuthResult);
-    }
+            { 'client_id': Settings.ClientID, 'scope': Settings.Scopes, 'immediate': true },
+            handleAuthResult
+            );
+    };
+
+    var constructor = function () {
+        checkAuth();
+    };
+
+    constructor();
 }

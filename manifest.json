@@ -4,7 +4,7 @@
     "name": "TreePad",
     "short_name": "Text editor TreePad",
     "description": "This is simple hierarchical text editor",
-    "version": "1.2.7",
+    "version": "1.2.10",
 
     "permissions": [
         "identity",

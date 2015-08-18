@@ -1,4 +1,4 @@
-﻿function Article(parentUl, data, visible, onSelect) {
+function Article(parentUl, data, visible, onSelect) {
 
     var me = this;
 
@@ -29,7 +29,7 @@
                 $sign.removeClass('glyphicon-minus').addClass('glyphicon-plus');
             }
         }
-    }
+    };
 
     this.select = function () {
         $(".tree li > span.selected").removeClass("selected");
@@ -37,15 +37,15 @@
         if (on_select) {
             on_select(me);
         }
-    }
+    };
 
     this.li = function () {
         return $li;
-    }
+    };
 
     this.ul = function () {
         return $ul;
-    }
+    };
 
     this.getData = function(){
         var $list = $ul.find('> li');
@@ -56,39 +56,39 @@
             data.push(art.getData());
         }
         return {title: $lab.text(), text: me.text, children: data };
-    }
+    };
 
     this.add = function (article) {
         if (!me.expanded) {
             me.expand();
         }
-    }
+    };
 
     this.expand = function () {
         me.expanded = true;
         $li.removeClass('collapsed').addClass('expanded');
-    }
+    };
 
     this.collapse = function () {
         me.expanded = false;
         $li.removeClass('expanded').addClass('collapsed');
-    }
+    };
 
     this.up = function () {
 
-    }
+    };
 
     this.down = function () {
 
-    }
+    };
 
     this.html = function () {
         return $li[0].outerHTML;
-    }
+    };
 
     var constructor = function () {
 
-        var has_children = data.children != undefined && data.children.length > 0;
+        var has_children = data.children !== undefined && data.children.length > 0;
 
         $li = $('<li class="collapsed"></li>');
         $li.data('article', me);

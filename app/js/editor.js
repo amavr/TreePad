@@ -1,21 +1,21 @@
-﻿function Editor(FileID, HomeFolderId) {
+function Editor(FileID, HomeFolderId) {
 
     var me = this;
     var file_id = FileID;
     var folder_id = HomeFolderId;
-    var tree = null; 
+    var tree = null;
     this.title = '';
 
     var $body = $("body");
 
-    var showWait = function(bool) {
+    var showWait = function (bool) {
         if (bool) {
             $body.addClass("loading");
         }
         else {
             $body.removeClass("loading");
         }
-    }
+    };
 
 
     var downloadFile = function (callback) {
@@ -54,7 +54,7 @@
                 callback(false, res.error);
             }
         });
-    }
+    };
 
     var uploadFile = function (fileData, title, id, callback) {
         showWait(true);
@@ -87,20 +87,20 @@
                 base64Data +
                 close_delim;
 
-            var rest_id = (id == null) ? '' : '/' + id;
-            var method = (id == null) ? 'POST' : 'PUT';
+            var rest_id = (id === null) ? '' : '/' + id;
+            var method = (id === null) ? 'POST' : 'PUT';
 
             var request = gapi.client.request({
                 'path': '/upload/drive/v2/files' + rest_id,
                 'method': method,
                 'params': { 'uploadType': 'multipart' },
-                'headers': {'Content-Type': 'multipart/mixed; boundary="' + boundary + '"', 'Authorization': 'Bearer ' + Settings.AccessToken},
+                'headers': { 'Content-Type': 'multipart/mixed; boundary="' + boundary + '"', 'Authorization': 'Bearer ' + Settings.AccessToken },
                 'body': multipartRequestBody
             });
 
             if (!callback) {
                 callback = function (file) {
-                    console.log(file)
+                    console.log(file);
                 };
             }
             request.execute(function (file) {
@@ -108,63 +108,62 @@
                 showWait(false);
                 callback(file);
             });
-        }
-    }
+        };
+    };
 
-    var  initHandlers = function() {
-    
-            $('#btn-debug').bind('click', function () {
-                var data = tree.getData();
-                console.log(data);
-            });
+    var initHandlers = function () {
 
-            $('#btn-save').bind('click', function () {
-                var data = tree.getData();
-                me.save(data, function(file){
-                    console.log(file);
-                });
+        $('#btn-debug').bind('click', function () {
+            var data = tree.getData();
+            console.log(data);
+        });
+
+        $('#btn-save').bind('click', function () {
+            var data = tree.getData();
+            me.save(data, function (file) {
+                console.log(file);
             });
-    
-            $('#btn-saveas').bind('click', function () {
-                me.saveas();
-            });
-    
-    
-            $('#btn-up').bind('click', function () {
-                tree.up();
-            });
-    
-            $('#btn-down').bind('click', function () {
-                tree.down();
-            });
-    
-            $('#btn-add').bind('click', function () {
-                tree.add({ title: 'new node', text: '' });
-            });
-    
-            $('#btn-del').bind('click', function () {
-                tree.delete();
-            });
+        });
+
+        $('#btn-saveas').bind('click', function () {
+            me.saveas();
+        });
+
+
+        $('#btn-up').bind('click', function () {
+            tree.up();
+        });
+
+        $('#btn-down').bind('click', function () {
+            tree.down();
+        });
+
+        $('#btn-add').bind('click', function () {
+            tree.add({ title: 'new node', text: '' });
+        });
+
+        $('#btn-del').bind('click', function () {
+            tree.delete();
+        });
             
-            // включение/выключение режима редактирования имени узла
-            $('.tree')
-                .delegate('span > div', 'dblclick', function () {
-                    this.contentEditable = true;
-                })
-                .delegate('span > div', 'blur', function () {
+        // включение/выключение режима редактирования имени узла
+        $('.tree')
+            .delegate('span > div', 'dblclick', function () {
+                this.contentEditable = true;
+            })
+            .delegate('span > div', 'blur', function () {
+                this.contentEditable = false;
+            })
+            .delegate('span > div', 'keypress', function (e) {
+                if (e.which == 13) {
                     this.contentEditable = false;
-                })
-                .delegate('span > div', 'keypress', function (e) {
-                    if (e.which == 13)
-                    {
-                        this.contentEditable = false;
-                        return false;
-                    }
-                });            
-    }
+                    return false;
+                }
+            });
+    };
 
     this.load = function (callback) {
-        downloadFile(function(success, answer){
+        downloadFile(function (success, answer) {
             if (success) {
                 // console.log(answer);
                 var data = JSON.parse(answer);
@@ -174,28 +173,45 @@
             }
             callback(success, answer);
         });
-    }
+    };
 
     this.save = function (data, callback) {
-        // uploadFile(data, callback);
-        var text = JSON.stringify(data);
-        var blob = new Blob([text], { type: 'application/json' });
-        uploadFile(blob, me.title, file_id, callback);
-    }
+        new AuthHelper(function(token){
+            if(token){
+                Settings.AccessToken = token;
+                
+                var text = JSON.stringify(data);
+                var blob = new Blob([text], { type: 'application/json' });
+                uploadFile(blob, me.title, file_id, callback);
+            }
+            else{
+                alert('No access to Google Drive');
+            }
+        });
+    };
 
     this.saveas = function (data, title, callback) {
-        var text = JSON.stringify(data);
-        var blob = new Blob([text], { type: 'application/json' });
-        var new_id = (title === me.title) ? file_id : null;
-        uploadFile(blob, title, new_id, callback);
-
-        this.title = title;
-        document.title = title;
-    }
+        new AuthHelper(function(token){
+            if(token){
+                Settings.AccessToken = token;
+                
+                var text = JSON.stringify(data);
+                var blob = new Blob([text], { type: 'application/json' });
+                var new_id = (title === me.title) ? file_id : null;
+                uploadFile(blob, title, new_id, callback);
+        
+                this.title = title;
+                document.title = title;
+            }
+            else{
+                alert('No access to Google Drive');
+            }
+        });
+    };
 
     var constructor = function () {
         // downloadFile(printFile);
-    }
+    };
 
     constructor();
 }
@@ -206,22 +222,31 @@ function getParameterByName(name) {
         results = regex.exec(location.search);
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
+
+function auth(){
     
-function checkAuth() {
-
-    drive = new Drive(function () {
-        var editor = new Editor(getParameterByName('id'), drive.props.id);
-        editor.load(function (success, answer) {
-            // console.log(text);
-            if (!success) {
-                if (answer.code == 401) alert(answer.message);
-            }
-        });
-    });
-
+    var f = function(token){
+        if(token){
+            Settings.AccessToken = token;
+            gapi.client.load('drive', 'v2', function () {
+                drive = new Drive(function () {
+                    var editor = new Editor(getParameterByName('id'), drive.props.id);
+                    editor.load(function (success, answer) {
+                        // console.log(text);
+                        if (!success) {
+                            if (answer.code == 401) alert(answer.message);
+                        }
+                    });
+                });
+            });
+        }
+    };
+    
+    new AuthHelper(f);
 }
 
 function gapiLoad() {
-    window.setTimeout(checkAuth, 1);
+    // window.setTimeout(checkAuth, 1);
+    window.setTimeout(auth, 1);
 }
 
