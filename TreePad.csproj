@@ -47,11 +47,10 @@
     <Content Include="app\img\node-tree-icon-24.png" />
     <Content Include="app\img\node-tree-icon-32.png" />
     <Content Include="app\js\article.js" />
-    <Content Include="app\js\auth.js" />
     <Content Include="app\js\back.js" />
     <Content Include="app\js\editor.js" />
     <Content Include="app\js\event.js" />
-    <Content Include="app\js\folder.js" />
+    <Content Include="app\js\drive.js" />
     <Content Include="app\js\popup.js" />
     <Content Include="app\js\settings.js" />
     <Content Include="app\js\tree.js" />
