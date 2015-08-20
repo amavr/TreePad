@@ -82,7 +82,7 @@ function PageInfo() {
 }
 
 
-function auth(){
+function popupAuth(){
     
     var callback = function(token){
         if(token){
@@ -103,9 +103,13 @@ function auth(){
 }
 
 
-function gapiLoad() {
+function popupInit() {
     // window.setTimeout(checkAuth, 1);
-    window.setTimeout(auth, 1);
+    gapi.client.setApiKey(Settings.ApiKey);
+    window.setTimeout(popupAuth, 1);
 }
 
-
+function log(msg){
+    var html = document.getElementById('box-log').innerHTML; 
+    document.getElementById('box-log').innerHTML = html + msg + '<br/>';
+}

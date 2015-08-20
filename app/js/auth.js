@@ -8,7 +8,6 @@ function AuthHelper(callback) {
     var handleAuthResult = function (authResult) {
 
         if (authResult && !authResult.error) {
-            gapi.client.setApiKey(Settings.ApiKey);
             cb(authResult.access_token);
         } else {
             if (can_auth) {
@@ -19,6 +18,7 @@ function AuthHelper(callback) {
                     handleAuthResult);
             }
             else {
+                log('handleAuthResult problem');
                 alert(authResult.error);
                 cb(null);
             }

@@ -23,7 +23,8 @@
     "oauth2": {
         "client_id": "458531844515-8aohg5151k1gdmfbt5762dpjcc25g9e9.apps.googleusercontent.com",
         "scopes": [
-            "https://www.googleapis.com/auth/drive"
+            "https://www.googleapis.com/auth/drive",
+            "https://content.googleapis.com/drive"
         ]
     },
 
